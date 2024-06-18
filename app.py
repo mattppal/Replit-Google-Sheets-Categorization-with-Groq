@@ -11,7 +11,7 @@ from replit import db
 WRITE_COL = "category"
 SUMMARY_COL = "description"
 
-SHEET_NAME = os.getenv("SHEET_NAME", "Fake Customer Support")
+SHEET_NAME = os.getenv("SHEET_NAME")
 WORKSHEET_NAME = os.getenv("WORKSHEET_NAME", "Support Requests")
 SA_JSON = os.getenv("SERVICE_ACCOUNT_JSON")
 
@@ -19,21 +19,24 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def map_keys_to_cols(row: dict) -> dict:
-  """
-  Map key indicies to columns in Google Sheets, e.g. 1 -> A, 2 -> B, etc.
-  """
-  return {k: chr(ord("@") + (i + 1)) for i, k in enumerate(row.keys())}
+    """
+    Map dictionary keys to Google Sheets columns.
+    Maps keys to columns such as 'A' for 1, 'B' for 2, etc.
+    """
+    column_map = {}
+    for idx, key in enumerate(row.keys(), start=1):
+        column_letter = chr(64 + idx)
+        column_map[key] = column_letter
+    return column_map
+  
 
 
 def hash_row(row: dict) -> str:
   """
   Hash a row to be used as a unique identifier.
   """
-
-  return hashlib.sha1((json.dumps({
-      k: v
-      for k, v in row.items() if k != WRITE_COL
-  }).encode())).hexdigest()
+  row_string = json.dumps(row, sort_keys=True)
+  return hashlib.sha256(row_string.encode('utf-8')).hexdigest()
 
 
 def generate_category(row: dict) -> str | None:

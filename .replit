@@ -1,4 +1,4 @@
-entrypoint = "main.py"
+entrypoint = ".tutorial/01.md"
 modules = ["python-3.10"]
 run = "python app.py"
 
